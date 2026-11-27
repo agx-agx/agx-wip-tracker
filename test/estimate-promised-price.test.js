@@ -37,7 +37,6 @@
 //   P7  js/estimate-preview.js computeTotal         the proposal document's total
 //   P8  js/estimate-preview.js pricedTable          the proposal document's rows
 //   P9  js/bt-export.js                             the Buildertrend xlsx
-//   P10 server/services/clickr/estimate-match.js    the import's own verification
 //
 //   (P11, server/routes/ai-routes.js, produces PROSE rather than a document
 //    total. Its wiring to the same pipeline is asserted in
@@ -60,8 +59,6 @@ const { JSDOM } = require('jsdom');
 const REPO = path.join(__dirname, '..');
 const P = require('../js/pricing-pipeline.js');
 const serverTotals = require('../server/services/money/estimate-totals');
-const estMatch = require('../server/services/clickr/estimate-match');
-const { readEstimateLine } = require('../server/services/clickr/field-map');
 const H = require('./helpers/estimate-editor-harness.js');
 
 const cents = (n) => Math.round(Number(n) * 100) / 100;
@@ -258,70 +255,6 @@ function editor(est, lines) {
 afterEach(() => { H.closeAll(); });
 
 // ══════════════════════════════════════════════════════════════════════
-// 1 — THE THREE REAL FIGURES, imported and priced.
-// ══════════════════════════════════════════════════════════════════════
-describe('the live refusal: a Buildertrend price no percent can reach now imports', () => {
-  // The three amounts off the live preview, in the shape that produced them:
-  // markup type "2", builder cost $0.00, a price typed for the owner.
-  const REAL = [
-    ['A. Structural Repairs at Building 9', 20000],
-    ['B. Structural Repairs at Building 14', 10875],
-    ['C. Structural Repairs at Building 22', 49750],
-  ];
-  const btLine = (id, title, owner) => readEstimateLine({
-    lineItemId: String(id), worksheetId: '9100', groupId: 'G1', groupTitle: 'Structural',
-    displayOrder: id, itemTitle: title, quantity: 1, unitCost: 0, builderCost: 0,
-    markupType: '2', markupPercent: 0, markupPerUnit: owner, markupAmount: owner,
-    margin: 100, unitPrice: owner, ownerPrice: owner,
-    jobId: '111', jobName: 'Citi Lakes', contractPrice: 100000, proposalStatus: 'Draft',
-    worksheetLocked: false, isDeleted: false,
-  });
-
-  test('each one imports, and P86 prices it at Buildertrend’s own owner price EXACTLY', () => {
-    REAL.forEach(([title, owner], i) => {
-      const built = estMatch.buildLines([btLine(9101 + i, title, owner)], '9100');
-      expect([title, built.refusals]).toEqual([title, []]);
-      const l = built.lines.filter((x) => x.section !== '__section_header__')[0];
-      // THE COST IS STILL THE COST. Buildertrend says $0.00 and P86 says
-      // $0.00 — putting the quote in unitCost is the bug this field exists
-      // to end, and it would book the whole $20,000 as job cost.
-      expect([title, l.qty, l.unitCost, l.unitSell]).toEqual([title, 1, 0, owner]);
-      // Priced through P86's OWN pipeline, not by an expression written here.
-      expect([title, estMatch.p86PricedTotal(built.lines).clientPrice]).toEqual([title, owner]);
-      // EXACT, not within a tolerance: a promise has no rounded percent to
-      // forgive, so its tolerance is half a cent and its residual is zero.
-      expect([title, built.tolerance]).toEqual([title, estMatch.EPS]);
-    });
-  });
-
-  test('all three on ONE worksheet: the total is the sum, to the cent', () => {
-    const live = REAL.map(([t, o], i) => btLine(9101 + i, t, o));
-    const built = estMatch.buildLines(live, '9100');
-    expect(built.refusals).toEqual([]);
-    expect(built.promised).toHaveLength(3);
-    const owner = estMatch.btOwnerTotal(live).total;
-    expect(owner).toBe(80625);                       // 20000 + 10875 + 49750
-    expect(estMatch.p86PricedTotal(built.lines).clientPrice).toBe(80625);
-    // And the estimate's COST side is still nothing, which is what
-    // Buildertrend says and what makes the profit expressible at all.
-    expect(estMatch.p86PricedTotal(built.lines).baseCost).toBe(0);
-    expect(estMatch.btCostTotal(live)).toBe(0);
-  });
-
-  test('the worksheet SAYS which lines were told their price rather than deriving it', () => {
-    const live = REAL.map(([t, o], i) => btLine(9101 + i, t, o));
-    const built = estMatch.buildLines(live, '9100');
-    const note = estMatch.promisedSentence({ built });
-    expect(note).toMatch(/3 of this worksheet’s lines carry a price Buildertrend states outright/);
-    expect(note).toMatch(/“A\. Structural Repairs at Building 9” at \$20,000\.00/);
-    expect(note).toMatch(/the cost stays exactly what Buildertrend says it is/);
-    // The refusal note that used to describe a limit which no longer exists
-    // is not what a person is shown for these lines.
-    expect(note).not.toMatch(/rounded to two decimals/);
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
 // 2 — ONE WORKSHEET, EVERY PATH. The test that makes the change safe.
 // ══════════════════════════════════════════════════════════════════════
 describe('every estimate money path agrees to the cent', () => {
@@ -336,7 +269,7 @@ describe('every estimate money path agrees to the cent', () => {
     ['a document default markup the promise ignores', { defaultMarkup: 40 }],
   ];
 
-  test.each(SHAPES)('%s — P1..P10 all report the same number', async (_name, extra) => {
+  test.each(SHAPES)('%s — P1..P9 all report the same number', async (_name, extra) => {
     const { est, lines } = fixture(extra);
     const ref = reference(est, lines);
 
@@ -347,7 +280,7 @@ describe('every estimate money path agrees to the cent', () => {
       ? BASE_COST / (1 - est.targetMargin / 100)
       : DERIVED_SELL)));
 
-    // P2 — the server module (deal memory, the clickr import proof).
+    // P2 — the server module (deal memory).
     const t2 = serverTotals.computeEstimateTotals(est);
     expect(cents(t2.markedUp)).toBe(cents(ref.markedUp));
     expect(cents(t2.proposalTotal)).toBe(cents(ref.total));
@@ -398,9 +331,6 @@ describe('every estimate money path agrees to the cent', () => {
     // The rows SUM to the group's marked-up total — promise included.
     expect(cents(ed.rows.l1.amount + ed.rows.l2.amount)).toBe(cents(ref.markedUp));
 
-    // P10 — the import's own verification door, over the same lines.
-    const t10 = estMatch.p86PricedTotal(lines.map((l) => Object.assign({}, l)));
-    expect(cents(t10.markedUp)).toBe(cents(PROMISED_SELL + DERIVED_SELL));
   });
 
   // The promised row out of the proposal's SOV table: [unit price, extension].
@@ -927,39 +857,6 @@ describe('what a promised price on an estimate still may NOT do', () => {
     expect(serverTotals.computeEstimateTotals(withPrice).proposalTotal)
       .toBe(serverTotals.computeEstimateTotals(without).proposalTotal);  // …and prices nothing
     expect(serverTotals.computeEstimateTotals(without).promisedSell).toBe(2000);
-  });
-
-  test('a Buildertrend line that still cannot be expressed still refuses its worksheet', () => {
-    // A NON-ZERO cost can be reached by some percent, so a percent that
-    // misses its own owner price means Buildertrend's two figures disagree
-    // with EACH OTHER. A promise must not bury that.
-    const disagree = readEstimateLine({
-      lineItemId: '9201', worksheetId: '9200', groupId: 'G1', groupTitle: 'Doors',
-      displayOrder: 1, itemTitle: 'Flat rate door', quantity: 2, unitCost: 100,
-      builderCost: 200, markupType: '2', markupPercent: 0, markupPerUnit: 25,
-      markupAmount: 50, ownerPrice: 250, jobId: '111', jobName: 'Citi Lakes', isDeleted: false,
-    });
-    const built = estMatch.buildLines([disagree], '9200');
-    expect(built.lines.filter((l) => l.section !== '__section_header__')).toEqual([]);
-    expect(built.promised).toEqual([]);
-    expect(built.refusals[0].why)
-      .toMatch(/owner pays \$250\.00 for it, and Project 86 prices the same quantity, unit cost and 0% markup at \$200\.00/);
-
-    // And a ZERO cost with a ZERO quantity: qty x any unit price is $0.00, so
-    // a promise cannot express it either. The refusal names THAT limit rather
-    // than a markup tolerance that was never the binding one.
-    const zeroQty = readEstimateLine({
-      lineItemId: '9202', worksheetId: '9200', groupId: 'G1', groupTitle: 'Doors',
-      displayOrder: 2, itemTitle: 'Permit', quantity: 0, unitCost: 0, builderCost: 0,
-      markupType: '3', markupPercent: 0, markupAmount: 500, ownerPrice: 500,
-      jobId: '111', jobName: 'Citi Lakes', isDeleted: false,
-    });
-    const built2 = estMatch.buildLines([zeroQty], '9200');
-    expect(built2.lines.filter((l) => l.section !== '__section_header__')).toEqual([]);
-    expect(built2.refusals[0].why).toMatch(/no markup percent can express that/);
-    expect(built2.refusals[0].why).toMatch(/quantity is 0, so a stated unit price cannot reach it either/);
-    // A refused line carries NO half-promise into the array.
-    expect(JSON.stringify(built2.lines)).not.toMatch(/unitSell/);
   });
 });
 

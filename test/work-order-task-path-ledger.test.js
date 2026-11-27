@@ -123,39 +123,6 @@ function writtenColumns(src) {
 // check(src) returns a list of problems (empty when the entry holds). `optional`
 // entries may stop writing tasks without failing the ledger.
 const LEDGER = {
-  'server/services/clickr/sync-apply.js': {
-    why: 'The Buildertrend sync. Creates an org task against a linked P86 job, and updates one it created, from the Buildertrend Tasks dataset.',
-    // It DOES write assignee_user_id, from a Buildertrend name resolved to
-    // exactly one user of this organisation. It has no caller to refuse: the
-    // rows it can reach are fixed by its own statements, and none of them is a
-    // building.
-    assignment: 'unreachable',
-    provesUnreachable(src) {
-      const problems = [];
-      const ins = between(src, 'INSERT INTO tasks (', ');');
-      if (!ins) { problems.push('the task INSERT was not found'); return problems; }
-      // A building is a task under a service ticket. This row is anchored to a
-      // JOB by literals, so it cannot be born as one.
-      if (ins.indexOf("'job', $2, 'org'") < 0) problems.push('the INSERT no longer anchors the row to a job with literal entity_type and scope');
-      if (/service_ticket_id/.test(ins)) problems.push('the INSERT now names service_ticket_id — it could create a work-order building');
-      // And it cannot REACH one: every row it updates came from the preview
-      // read, which excludes buildings by three predicates of its own (see the
-      // entry for sync-preview.js in the read census).
-      for (const stmt of src.match(/UPDATE\s+tasks\b[^;]*/gi) || []) {
-        if (!/organization_id = \$\d+/.test(stmt)) problems.push('a tasks UPDATE lost its organization predicate');
-        if (!/WHERE\s+id = \$\d+/.test(stmt)) problems.push('a tasks UPDATE is no longer pinned to one row by id');
-      }
-      return problems;
-    },
-    check(src) {
-      const problems = [];
-      const ins = between(src, 'INSERT INTO tasks (', ');');
-      if (ins && ins.indexOf('SELECT organization_id FROM jobs WHERE id = $2') < 0) {
-        problems.push('the INSERT no longer takes its organisation from the job it hangs on');
-      }
-      return problems;
-    },
-  },
   'server/services/service-ticket-workorder.js': {
     why: 'THE door: setSubtaskDone completes or reopens a building under the ticket lock.',
     // Its one statement sets status, completed_at and updated_at, spelled out

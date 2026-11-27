@@ -3126,7 +3126,7 @@ function renderJobsMain() {
             if (job.status === 'Archived') {
                 // Unarchive — no confirm needed, it's a recoverable toggle.
                 // Put back the status this job was archived FROM, the way
-                // services/clickr/reconcile-merge.js restores one (same slot,
+                // the Buildertrend reconcile restored one (same slot,
                 // data.btArchivedFromStatus, so an archive from either door
                 // restores through either door). Without the stash this line
                 // rewrote every archived job to Completed on the way back —
@@ -3431,8 +3431,7 @@ function renderJobsMain() {
                 if ((v = gv('edit-jobStartDate')) !== null) job.startDate = (v || '').trim();
                 if ((v = gv('edit-jobEndDate')) !== null) job.endDate = (v || '').trim();
                 // Archiving from THIS card stashes the prior status, into the
-                // same slot archiveCurrentJob and services/clickr/reconcile-
-                // merge.js use, so Restore / Unarchive puts back what the job
+                // same slot archiveCurrentJob uses, so Restore / Unarchive puts back what the job
                 // actually was instead of guessing In Progress. Read straight
                 // off the control rather than through gv(): the write below has
                 // to keep its one-line shape, which is what the save-invariant

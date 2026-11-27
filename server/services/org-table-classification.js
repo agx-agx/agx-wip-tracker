@@ -54,7 +54,7 @@ const DIRECT = [
   'admin_audit_log', 'agent_jobs', 'agent_reference_links', 'ai_memories',
   'ai_subtasks', 'ai_training_examples', 'ai_watch_runs', 'ai_watches',
   'assembly_research', 'assembly_tuning_log',
-  // The Buildertrend preview's memory (services/clickr/since-refresh.js): each
+  // The Buildertrend preview's memory (preview removed 11/26/2026): each
   // row's own NOT NULL organization_id is the tenant, never inferred from a job.
   'bt_preview_views', 'bt_record_snapshots', 'bt_sync_runs', 'bt_sync_changes',
   'calendar_events', 'clients',

@@ -18,18 +18,32 @@
  * the model fell back to enumerating the portfolio. A filter that cannot
  * express the question makes the model pay for the answer in rows.
  *
- * "Active" is not a status, it is four of them. The mapping already exists and
- * is already pinned: services/clickr/bt-match.js p86JobState() puts New,
+ * "Active" is not a status, it is four of them. p86JobState() below puts New,
  * Backlog, In Progress and On Hold under `active`, and Warranty, Completed and
  * Archived each under their own state, with test/job-status-vocabulary.test.js
- * asserting every one of the seven. Reusing it is the point of this file —
- * a second mapping here is how the two would drift.
+ * asserting every one of the seven. It is the one mapping; a second one is how
+ * the two would drift.
  *
  * AN EXACT STATUS STILL WINS. `status: 'On Hold'` keeps behaving exactly as it
  * did, so nothing that worked before this file changes.
  */
 
-const { p86JobState } = require('./clickr/bt-match');
+// P86 job status vocabulary (js/jobs.js edit card: New, Backlog, In Progress,
+// On Hold, Warranty, Completed, Archived). Anything else is UNKNOWN — and a
+// status outside this vocabulary has no state, so a status P86 really has must
+// be IN here or its jobs drop out of every state filter.
+//
+// Warranty is its OWN state, deliberately not folded into P86_ACTIVE.
+const P86_ACTIVE = new Set(['new', 'backlog', 'in progress', 'on hold']);
+function p86JobState(v) {
+  const t = String(v == null ? '' : v).trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!t) return null;
+  if (t === 'warranty') return 'warranty';
+  if (P86_ACTIVE.has(t)) return 'active';
+  if (t === 'completed') return 'completed';
+  if (t === 'archived') return 'archived';
+  return null;
+}
 
 // The four state words a filter may use, as the pinned mapping defines them.
 const JOB_STATES = ['active', 'warranty', 'completed', 'archived'];
@@ -110,6 +124,7 @@ function formatJobCount(histogram, opts) {
 
 module.exports = {
   JOB_STATES,
+  p86JobState,
   isStateWord,
   matchesJobStatus,
   jobStateHistogram,

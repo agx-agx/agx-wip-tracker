@@ -538,8 +538,8 @@ router.post('/purchase-orders/:id/status', requireAuth, requireCapability('ESTIM
       })
     });
     // DELIBERATELY NOT beside grantSubAccessForPO above: that helper is
-    // shared with the sync (services/clickr/sync-apply.js calls it after
-    // commit), and one 'Run sync now' walks every matched PO.
+    // shared with other writers (the Buildertrend sync called it after commit
+    // until 11/26/2026), and one run could walk every matched PO.
     trackNotice('purchase-order notice', function () {
       const notices = require('../services/money-notices');
       return (async function () {

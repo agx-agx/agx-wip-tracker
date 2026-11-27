@@ -1,18 +1,18 @@
 // test/job-archive-restores-status.test.js — archiving a job and putting it
 // back must not rewrite its status.
 //
-// There are FOUR archive doors and THREE restore doors, and they used to give
-// three different answers:
+// There are THREE archive doors and TWO restore doors (a fourth and third,
+// the Buildertrend sync's, went with the sync on 11/26/2026), and they used to
+// give different answers:
 //
-//   services/clickr/reconcile-merge.js  stashes data.btArchivedFromStatus on
-//                                       archive and puts it back on restore;
 //   js/jobs.js archiveCurrentJob()      Unarchive → hardcoded 'Completed';
 //   js/jobs.js restoreJob()             Restore   → hardcoded 'In Progress'.
 //
 // So a Warranty job archived from either UI surface came back as something
 // else — and so did a Backlog, New or On Hold job, silently, for as long as
-// those statuses have existed. The two UI doors now use the same stash slot as
-// the sync does, so an archive through one door restores correctly through any.
+// those statuses have existed. The UI doors now share one stash slot,
+// data.btArchivedFromStatus, so an archive through one door restores correctly
+// through any.
 //
 // Driven, not modelled: the function TEXT is lifted out of js/jobs.js and
 // evaluated with its free variables injected (test/helpers/browser-fn.js), so
@@ -157,19 +157,13 @@ describe('the jobs-list bulk Set status menu', () => {
   });
 });
 
-describe('the SAME stash slot the Buildertrend sync uses', () => {
-  test('services/clickr/reconcile-merge.js reads and writes data.btArchivedFromStatus', () => {
-    // If these two drifted apart, a job archived by the sync and restored in the
-    // UI (or the reverse) would lose its status again — the exact bug, moved.
-    const rm = fs.readFileSync(
-      path.join(__dirname, '..', 'server', 'services', 'clickr', 'reconcile-merge.js'), 'utf8');
-    expect(rm).toMatch(/d\.btArchivedFromStatus = d\.status \|\| '';/);
-    expect(rm).toMatch(/d\.status = d\.btArchivedFromStatus \|\| 'In Progress';/);
+describe('ONE stash slot for every archive door', () => {
+  test('js/jobs.js writes and clears data.btArchivedFromStatus', () => {
     expect(SRC).toMatch(/job\.btArchivedFromStatus = job\.status \|\| '';/);
     expect((SRC.match(/delete job\.btArchivedFromStatus;/g) || []).length).toBe(2);
-    // FOUR archive doors write the slot: archiveCurrentJob, the bulk menu, the
-    // Job Information edit card, and the sync. A door added without it is the
-    // whole bug again.
+    // THREE archive doors write the slot: archiveCurrentJob, the bulk menu and
+    // the Job Information edit card. A door added without it is the whole bug
+    // again.
     expect((SRC.match(/btArchivedFromStatus = (job|j)\.status \|\| '';/g) || []).length).toBe(3);
   });
 });

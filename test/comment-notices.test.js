@@ -20,11 +20,6 @@
  *      here is how two mutations stayed invisible in money-notices.test.js.
  *   4. ONE PERSON, ONE COPY. The uploader is a second audience with a
  *      different footer; being in both must not mail them twice.
- *
- * The sync caution that dominates money-notices.test.js is absent here for a
- * reason this file pins: services/clickr/* never writes `messages` and the
- * string `thread_key` does not appear in it, so Buildertrend has no door into
- * a comment thread at all.
  */
 'use strict';
 
@@ -481,19 +476,4 @@ describe('the doors that post a comment', () => {
     expect(liveLines(read('server/routes/ai-routes.js'), "require('../services/inflight').track(").length).toBe(1);
   });
 
-  test('the Buildertrend sync has no door into a comment thread at all', () => {
-    const dir = path.join(__dirname, '..', 'server', 'services', 'clickr');
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.js'));
-    expect(files.length).toBeGreaterThan(3);
-    const offenders = [];
-    for (const f of files) {
-      const src = fs.readFileSync(path.join(dir, f), 'utf8');
-      // Not "it must not call the notifier" but the stronger claim the module
-      // header makes: the sync does not touch this table, so there is nothing
-      // to key a notice off. If that ever changes, the notice needs the same
-      // route-boundary discipline the money notices have.
-      if (/thread_key|comment-notices/.test(src)) offenders.push('server/services/clickr/' + f);
-    }
-    expect(offenders).toEqual([]);
-  });
 });

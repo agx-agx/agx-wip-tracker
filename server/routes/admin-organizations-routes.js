@@ -483,40 +483,7 @@ router.delete('/:id', requireAuth, requireSystemAdmin, async (req, res) => {
 
 // GET /api/admin/organizations/me — the caller's own org row.
 // Read-only convenience for the admin UI on first load.
-//
-// ?view=buildertrend-preview — the READ-ONLY Buildertrend -> P86 sync preview
-// (server/services/clickr/sync-preview.js). A MODE of this route rather than a
-// route of its own, so test/tenant-register2-http.test.js's committed route
-// census does not move; without the parameter this answers exactly what it
-// answered before. It runs behind this route's own requireAuth + requireOrg +
-// ROLES_MANAGE and then adds its own gate: the caller's organisation must be
-// the one CLICKR_API_KEY belongs to. The census drives /me WITHOUT the
-// parameter, so the mode's tenancy is proved in test/clickr-sync-preview.test.js.
-//
-// ?view=clickr-scout&dataset=<24 hex> — the READ-ONLY Clickr dataset scout
-// (server/services/clickr/scout.js): what keys a dataset carries, how often,
-// how many distinct values each holds, and — only where a value cannot be
-// personal or free text — what those values are. A third MODE of this route
-// for the same census reason. Same two gates as the preview (it imports the
-// preview's own ownerSlug), and it is handed NO pool on purpose: it reads
-// nothing from Project 86 and writes nothing anywhere. Its tenancy, its
-// dataset-id check and its disclosure rule are proved in test/clickr-scout.test.js.
 router.get('/me', requireAuth, requireOrg, requireCapability('ROLES_MANAGE'), (req, res) => {
-  if (req.query && req.query.view === 'buildertrend-archive') {
-    return require('../services/clickr/sync-apply').handleArchiveList(req, res, { pool });
-  }
-  if (req.query && req.query.view === 'buildertrend-preview') {
-    return require('../services/clickr/sync-preview').handle(req, res, { pool });
-  }
-  if (req.query && req.query.view === 'clickr-scout') {
-    return require('../services/clickr/scout').handle(req, res, {});
-  }
-  // ?view=buildertrend-history — the runs a sync has made and what each one
-  // changed, read-only. Another MODE of this route, for the same census
-  // reason as the preview.
-  if (req.query && req.query.view === 'buildertrend-history') {
-    return require('../services/clickr/sync-journal').handleHistory(req, res, { pool });
-  }
   res.json({ organization: req.organization });
 });
 
@@ -524,40 +491,7 @@ router.get('/me', requireAuth, requireOrg, requireCapability('ROLES_MANAGE'), (r
 // identity_body / settings. Returns the updated row. The admin UI
 // is expected to re-trigger a managed-agent sync after a successful
 // update so the new identity_body lands on Anthropic.
-// ?action=buildertrend-apply — the WRITE half of the Buildertrend preview
-// (server/services/clickr/sync-apply.js): link confident matches by
-// Buildertrend id and apply the non-money corrections an admin chose. A MODE of
-// this route for the same census reason as GET /me?view=buildertrend-preview;
-// only /me is accepted, and without the parameter this route is unchanged.
 router.put('/:id', requireAuth, requireOrg, requireCapability('ROLES_MANAGE'), async (req, res) => {
-  if (req.query && req.query.action === 'buildertrend-apply') {
-    if (req.params.id !== 'me') return res.status(400).json({ error: 'Buildertrend apply runs on /me only.' });
-    return require('../services/clickr/sync-apply').handle(req, res, { pool });
-  }
-  // ?action=buildertrend-undo — put back what a sync wrote, one change or a
-  // whole run. An update goes back only while the column still holds what the
-  // sync put there; a created record is deleted only while nothing points at
-  // it. See services/clickr/sync-journal.js.
-  if (req.query && req.query.action === 'buildertrend-undo') {
-    if (req.params.id !== 'me') return res.status(400).json({ error: 'Buildertrend undo runs on /me only.' });
-    return require('../services/clickr/sync-journal').handleUndo(req, res, { pool });
-  }
-  // ?action=buildertrend-market-map — say which P86 market a Buildertrend
-  // Market OPTION means (Buildertrend sends the option's id, not its name).
-  // Kept in organizations.settings.btMarketMap. See services/clickr/bt-market.js.
-  if (req.query && req.query.action === 'buildertrend-market-map') {
-    if (req.params.id !== 'me') return res.status(400).json({ error: 'Market mapping runs on /me only.' });
-    return require('../services/clickr/bt-market').handleMap(req, res, { pool });
-  }
-  // ?action=buildertrend-run-now — run the whole Buildertrend sync ONCE, now,
-  // the way the unattended run does it, whether or not BT_AUTO_SYNC is on. It
-  // answers 202 with the run's id as soon as the run has started; progress and
-  // the result are read from ?view=buildertrend-history. See
-  // services/clickr/auto-sync.js.
-  if (req.query && req.query.action === 'buildertrend-run-now') {
-    if (req.params.id !== 'me') return res.status(400).json({ error: 'A Buildertrend run starts on /me only.' });
-    return require('../services/clickr/auto-sync').handleRunNow(req, res, { pool });
-  }
   try {
     const targetId = assertOrgScope(req, req.params.id);
     const updates = [];

@@ -14,11 +14,10 @@ const jobLabel = require('../../js/job-label');
 // blank ones from the folded row: two copies of this list would let "what a
 // user may edit" and "what a merge may fill" drift apart silently.
 const { mergeClients, EDITABLE_FIELDS } = require('../services/client-merge');
-// isBtBlank - what "unknown" looks like on the Buildertrend side. The
-// import's rung 0 reads a Buildertrend-shaped cell, so it honours the same
-// test rather than inventing a second one. services/clickr/bt-match.js
-// requires nothing and does no I/O, so this costs nothing at boot.
-const { isBtBlank } = require('../services/clickr/bt-match');
+// isBtBlank - what "unknown" looks like in a Buildertrend-shaped cell. The
+// import's rung 0 reads one. services/bt-blank.js requires nothing and does no
+// I/O, so this costs nothing at boot.
+const { isBtBlank } = require('../services/bt-blank');
 
 const router = express.Router();
 
@@ -41,7 +40,7 @@ function pickEditable(body) {
 // twice, and eight of them with the Buildertrend id on exactly one side.
 //
 // So the decision is made on a LADDER, in the vocabulary
-// services/clickr/bt-match.js already uses for this same question:
+// the Buildertrend sync's matcher used for this same question:
 //   rung 0  bt_contact_id — the Buildertrend record id, when the sheet
 //           actually carries one. Nothing a name says can outrank it.
 //   rung 1  email — but only where the address is a 1:1 identity rather than
@@ -53,7 +52,7 @@ function pickEditable(body) {
 // Columns the BULK IMPORT may write that a hand edit may NOT.
 // EDITABLE_FIELDS is the PUT allowlist and services/client-merge.js's
 // blank-fill list at the same time, and bt_contact_id belongs in neither: it
-// is an IDENTITY, stamped by services/clickr/sync-apply.js when an admin
+// is an IDENTITY, stamped by the Buildertrend sync when an admin
 // applies a confident match and unique per (organization_id, bt_contact_id).
 // A user must not be able to type one into the client editor and silently
 // re-point a Buildertrend link, and a merge must not copy one onto a
@@ -122,13 +121,11 @@ function importEmailKey(v) {
 // row 1 had just created and rename it in turn: three properties in, one
 // client out, reported as a clean import.
 //
-// bt-match.js's isBtBlank is the blank test, reused rather than rewritten.
-// The extra words are the ones a SPREADSHEET puts in an id column and the
-// Clickr matcher has no reason to know about, so they stay local here:
-// widening its BLANK_WORDS would change the sync preview and its pinned
-// tests.
+// services/bt-blank.js's isBtBlank is the blank test, reused rather than
+// rewritten. The extra words are the ones a SPREADSHEET puts in an id column,
+// so they stay local here.
 //
-// No positive FORMAT is imposed. services/clickr/sync-apply.js stamps the
+// No positive FORMAT is imposed. The Buildertrend sync stamped the
 // id with no shape test at all, so there is no shape to require, and a
 // format gate that rejected a real Buildertrend id would silently re-inert
 // this rung and re-open the very class it exists to close.
@@ -646,7 +643,7 @@ router.post('/merge', requireAuth, requireCapability('ESTIMATES_EDIT'), async (r
   // One pooled client for the whole merge. Every statement has to see the
   // same transaction, so pool.query() — which hands out an arbitrary
   // connection per call — is not usable here. Same shape as
-  // services/clickr/sync-apply.js runBucket().
+  // the Buildertrend sync's runBucket().
   const db = await pool.connect();
   try {
     await db.query('BEGIN');
@@ -714,7 +711,7 @@ router.post('/import', requireAuth, requireCapability('ESTIMATES_EDIT'), require
       'SELECT id, name, email, bt_contact_id FROM clients WHERE (organization_id = $1 OR organization_id IS NULL)',
       [req.user.organization_id]
     );
-    // EVERY rung is indexed the way services/clickr/bt-match.js's indexBy()
+    // EVERY rung is indexed the way the sync's matcher indexBy()
     // does it: key -> [client id]. A single-valued Map keeps whichever row
     // the unordered SELECT returned LAST, so the rung silently resolves to a
     // coin toss whenever two clients share a key - and the premise of this
@@ -850,7 +847,7 @@ router.post('/import', requireAuth, requireCapability('ESTIMATES_EDIT'), require
       // WHERE bt_contact_id IS NOT NULL, so the import stamps one only where
       // it is free to: never over a different link, never onto a second
       // client. That is the same "taken" check
-      // services/clickr/sync-apply.js makes before IT stamps. A refusal is
+      // the Buildertrend sync made before IT stamped. A refusal is
       // REPORTED rather than swallowed — quietly dropping an identity is the
       // same class of bug as the one this change closes. The row's other
       // fields still import; only the id is withheld.

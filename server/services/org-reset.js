@@ -218,7 +218,7 @@ async function resetOrgData(orgId) {
     await del('service_ticket_shares', 'DELETE FROM service_ticket_shares WHERE organization_id = $1');
     await del('service_tickets', 'DELETE FROM service_tickets WHERE organization_id = $1');
 
-    // 9) The Buildertrend preview's memory (services/clickr/since-refresh.js):
+    // 9) The Buildertrend preview's memory (the preview was removed 11/26/2026):
     //    the Buildertrend values its last complete reads saw, and each admin's
     //    last refresh. A clean slate is a re-seed from Buildertrend; the next
     //    refresh starts fresh ("remembered from this refresh on") instead of

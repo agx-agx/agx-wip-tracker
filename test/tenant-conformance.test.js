@@ -1272,11 +1272,9 @@ describe('R4 — classify() is checked, never consulted', () => {
   // first column of its primary key, so the generic seeder plants org A / org B
   // / un-stamped rows in each with no curation step. Neither is parent-scoped:
   // a snapshot is a Buildertrend record, not a child of any P86 job, and a
-  // view row's tenant is its own column, never inferred from its user. Every
-  // statement services/clickr/since-refresh.js runs carries organization_id =
-  // the caller's organization, as a predicate or as the conflict key, and
-  // test/clickr-since-refresh.test.js seeds org 2 rows in both and proves they
-  // are never read or written. Both are wiped by services/org-reset.js.
+  // view row's tenant is its own column, never inferred from its user. Nothing
+  // writes either since the Buildertrend sync was removed (11/26/2026). Both
+  // are wiped by services/org-reset.js.
   // And one with Work Orders 1.30: `service_ticket_flags` (problems a crew
   // flagged from the share link). It is DIRECT in org-table-classification.js:
   // it carries its own NOT NULL organization_id, so the generic seeder plants

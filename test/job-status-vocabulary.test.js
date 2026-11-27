@@ -95,11 +95,10 @@ describe('every list that OFFERS a job status offers the whole vocabulary', () =
 });
 
 describe('every list that MAPS a job status knows the whole vocabulary', () => {
-  test('server/services/clickr/bt-match.js — a status outside p86JobState stops ALL comparison', () => {
+  test('server/services/job-status-filter.js — every status has a state in p86JobState', () => {
     // Not a source grep for its own sake: this function is the gate. A P86 job
-    // whose status it does not recognise has status comparison skipped
-    // entirely, silently, so a Buildertrend Closed against it proposes nothing.
-    const match = require('../server/services/clickr/bt-match');
+    // whose status it does not recognise drops out of every state filter.
+    const match = require('../server/services/job-status-filter');
     const unknown = VOCAB.filter((s) => match.p86JobState(s) == null);
     expect(unknown).toEqual([]);
     // And each one lands somewhere sensible, not all in one bucket.
@@ -150,13 +149,4 @@ describe('the status literals that are NOT pickers, named so they are not forgot
     expect([m && m[1], VOCAB.indexOf(m && m[1]) !== -1]).toEqual(['In Progress', true]);
   });
 
-  test('server/services/clickr/sync-apply.js maps a Buildertrend status into the vocabulary', () => {
-    const src = read('server/services/clickr/sync-apply.js');
-    const m = src.match(/function p86JobStatus\(btStatus\)[\s\S]{0,400}?\n\}/);
-    expect(m).not.toBe(null);
-    const minted = (m[0].match(/return '([^']+)';/g) || []).map((s) => s.slice(8, -2));
-    expect(minted.length).toBeGreaterThan(0);
-    expect(minted.filter((s) => VOCAB.indexOf(s) === -1)).toEqual([]);
-    expect(minted).toContain('Warranty');
-  });
 });

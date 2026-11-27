@@ -29,8 +29,8 @@
 // survivor, and the source deleted LAST.
 //
 // ── THE REFERENCE REGISTRY IS NOT RE-TYPED HERE ───────────────────────────
-// services/clickr/reconcile-merge.js already carries the list of every column
-// in server/db.js that points at a client, and test/reconcile-merge.test.js
+// services/record-references.js carries the list of every column
+// in server/db.js that points at a client, and test/record-references.test.js
 // pins that list to the schema: a new client reference in db.js fails that
 // test until it is registered. Re-typing the list here would give this file a
 // SECOND list that drifts away from the schema silently — the exact failure
@@ -50,7 +50,7 @@
 // listed in TENANT_LESS, which test/client-merge.test.js checks against the
 // real schema so a table that GAINS the column cannot stay on the list.
 
-const { PLAIN, POLYMORPHIC } = require('./clickr/reconcile-merge');
+const { PLAIN, POLYMORPHIC } = require('./record-references');
 
 // Editable client fields — the directory's own allowlist, and the set whose
 // BLANK members on the survivor are filled from the source. It lives here

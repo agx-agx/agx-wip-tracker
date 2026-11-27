@@ -31,8 +31,8 @@
  * is a separate question, answered by `bt_origin`.
  *
  * `pushed` IS NOT REACHABLE TODAY, on purpose. The integration currently only
- * reads: services/clickr/sync-apply.js pulls Buildertrend into Project 86 and
- * never writes back, so every record holding a Buildertrend id got it from
+ * read: the Buildertrend sync (removed 11/26/2026) pulled Buildertrend into Project 86 and
+ * never wrote back, so every record holding a Buildertrend id got it from
  * Buildertrend, and `bt_origin` has no writer yet. A record with an id and no
  * origin is therefore `synced` — true of 100% of today's rows. When push-back
  * lands it stamps bt_origin = 'project86' on what it creates over there and
@@ -95,7 +95,7 @@
   //
   // For a record type nothing syncs, it is not. AR invoices are the case that
   // forced this: the `invoices` table has no bt_* column and there is no
-  // invoice matcher in services/clickr/, so nobody has ever looked. And
+  // invoice matcher in the Buildertrend sync, so nobody ever looked. And
   // Buildertrend is the client-facing side of the operating model, so it very
   // likely DOES hold an invoice for the same job. Painting the plain `local`
   // sentence there would assert something we cannot support.

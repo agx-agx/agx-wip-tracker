@@ -1049,8 +1049,8 @@ router.post('/', requireAuth, requireCapability(INTERNAL_FLOOR_CAPS), async (req
     // A cost landing on a job is news to whoever runs it. Fired HERE and
     // nowhere else: two bulk writers re-point receipts outside any create route
     // (a lead→job conversion in job-routes.js, a client merge in
-    // services/client-merge.js) and `receipts` is on the clickr polymorphic
-    // reconcile list, so a notice hung off the TABLE would mail all of them.
+    // services/client-merge.js) and `receipts` is on the polymorphic
+    // reference list (services/record-references.js), so a notice hung off the TABLE would mail all of them.
     //
     // Both ids are dropped: callerUserId is the real caller, and an act-as
     // session attributes the work to somebody else.

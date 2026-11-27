@@ -457,14 +457,6 @@ describe('the doors', () => {
     ]);
   });
 
-  test('the Buildertrend sync cannot reach either notice', () => {
-    const dir = path.join(__dirname, '..', 'server', 'services', 'clickr');
-    for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js'))) {
-      const src = fs.readFileSync(path.join(dir, f), 'utf8');
-      expect([f, /arrival-notices/.test(src)]).toEqual([f, false]);
-    }
-  });
-
   test('no new organization_id IS NULL arm is invented', () => {
     // Every arm in the notifier COPIES the one its neighbouring reads already
     // carry; none is new relative to the tables it touches.

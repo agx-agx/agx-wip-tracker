@@ -28,8 +28,8 @@ const inflight = require('../services/inflight');
  * lets it finish, and a synchronous throw is caught the same as a rejection.
  *
  * THE ROUTE, NOT A HELPER. The Buildertrend sync creates and re-statuses
- * bills with its own SQL on its own client (services/clickr/sync-apply.js
- * createBill / applyBill) and never enters Express — so a notice here is
+ * bills with its own SQL on its own client (createBill / applyBill, removed
+ * 11/26/2026) and never enters Express — so a notice here is
  * unreachable from a sync run, and a notice on a shared helper or a trigger
  * would mail one per bill every thirty minutes.
  */

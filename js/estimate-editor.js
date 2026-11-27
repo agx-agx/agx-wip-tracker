@@ -4935,7 +4935,7 @@
     }
 
     // FILED UNDER A JOB, with no lead. The shape Buildertrend’s estimate
-    // worksheets arrive in (server/services/clickr/estimate-match.js): the
+    // worksheets arrived in from the Buildertrend sync: the
     // estimate belongs to a job’s file rather than to an opportunity, so the
     // UNATTACHED copy below — "sits outside the opportunity chain, no pipeline,
     // no map pin" — would be telling the estimator it is an orphan when it is

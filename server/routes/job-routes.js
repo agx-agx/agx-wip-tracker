@@ -1271,7 +1271,7 @@ router.put('/bulk/save', requireAuth, requireRole('admin', 'pm'), requireOrgId, 
         // stayed put. Strip it so the name is what resolves.
         delete jobBlob.market_id;
         // bt_job_id is the Buildertrend LINK, written only by the sync
-        // (services/clickr/sync-apply.js). It rides out on the GET for the
+        // (removed 11/26/2026). It rides out on the GET for the
         // provenance badge, so it must be stripped here or a bulk save would
         // round-trip it into the blob — where it would shadow the column and
         // could be set to anything by anyone. Same rule as market_id above.

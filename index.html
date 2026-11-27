@@ -780,7 +780,6 @@
                                     <button class="tab-btn app-nav-child app-nav-child2" data-tab="admin" data-admin-subtab="organization" data-admin-view="sms" title="SMS"><span class="app-nav-label">SMS</span></button>
                                     <button class="tab-btn app-nav-child app-nav-child2" data-tab="admin" data-admin-subtab="organization" data-admin-view="tags" title="Tag Catalog"><span class="app-nav-label">Tag Catalog</span></button>
                                     <button class="tab-btn app-nav-child app-nav-child2" data-tab="admin" data-admin-subtab="organization" data-admin-view="mappins" title="Map Pins"><span class="app-nav-label">Map Pins</span></button>
-                                    <button class="tab-btn app-nav-child app-nav-child2" data-tab="admin" data-admin-subtab="organization" data-admin-view="btpreview" title="Buildertrend preview and apply"><span class="app-nav-label">Buildertrend preview</span></button>
                                 </div>
                                 <div class="app-nav-subhead" style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:rgba(255,255,255,0.3);padding:10px 12px 3px 14px;">AI</div>
                                 <button class="tab-btn app-nav-child" data-tab="admin" data-admin-subtab="agents" data-virtual-tab="admin-agents" data-p86-icon="discord" title="Agents"><span class="app-nav-label">Agents</span></button>
@@ -3628,9 +3627,8 @@
     <script src="js/settings-registry.js?v=3"></script>
     <script src="js/admin-dashboard.js?v=4"></script>
     <script src="js/admin-preview.js?v=2"></script>
-    <script src="js/admin.js?v=151"></script>
+    <script src="js/admin.js?v=152"></script>
     <!-- Read-only Buildertrend -> P86 sync preview (Admin -> Organization). -->
-    <script src="js/bt-sync-preview.js?v=26"></script>
     <!-- Act-as / disguise mode: persistent "Acting as NAME — Exit" banner +
          window.p86ActAs(userId). Self-contained; re-fetches /api/auth/me. -->
     <script src="js/actas.js?v=1"></script>
@@ -3663,7 +3661,7 @@
     <!-- Site Conditions panel (window.p86SiteConditions). Loads BEFORE
          leads.js, which delegates its weather host to it. -->
     <script src="js/site-conditions.js?v=2"></script>
-    <script src="js/bt-badge.js?v=5"></script>
+    <script src="js/bt-badge.js?v=6"></script>
     <script src="js/leads.js?v=113"></script>
     <script src="js/job-costs-import.js?v=19"></script>
     <script src="js/qb-costs-view.js?v=26"></script>
@@ -3774,7 +3772,7 @@
     <!-- Shared pricing pipeline — math used by estimate-editor +
          estimate-preview + the upcoming change-order-editor. Loads
          BEFORE any of them so window.p86Pricing is ready. -->
-    <script src="js/pricing-pipeline.js?v=11"></script>
+    <script src="js/pricing-pipeline.js?v=12"></script>
     <!-- ONE COMPLETION CLOCK. progress-core.js is the pure math that used to be
          welded to appData inside progress.js; co-completion.js is HOW A CHANGE
          ORDER EARNS, the body that used to live inside js/jobs.js. Both are
@@ -3799,7 +3797,7 @@
     <script src="js/progress.js?v=4"></script>
     <!-- The Jobs list sort rules (pure; read by js/jobs.js at load). -->
     <script src="js/jobs-sort.js?v=2"></script>
-    <script src="js/jobs.js?v=266"></script>
+    <script src="js/jobs.js?v=267"></script>
     <script src="js/doc-import.js?v=8"></script>
     <script src="js/job-workflow-ui.js?v=7"></script>
     <!-- Job sidebar Files + Photos + Comments tabs (renderJobFiles /
@@ -3841,7 +3839,7 @@
     <script src="js/rich-text.js?v=1"></script>
     <script src="js/estimates.js?v=72"></script>
     <script src="js/proposal.js?v=27"></script>
-    <script src="js/estimate-editor.js?v=118"></script>
+    <script src="js/estimate-editor.js?v=119"></script>
     <!-- Change Order editor — overlay opened from the job detail's
          Change Orders tab. Loads after pricing-pipeline (which it
          consumes via window.p86Pricing) and after api.js (which

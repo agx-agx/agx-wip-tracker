@@ -5416,10 +5416,6 @@ function p86Ask(message, opts) {
     { key: 'sms',       label: '\u{1F4F1} SMS',              desc: 'SMS scheduling-agent observability for this org (send log, delivery stats). Global Twilio provider config lives in System.' },
     { key: 'tags',      label: '\u{1F3F7} Tag Catalog',      desc: 'Curated master list of photo tags used across projects. Rename to propagate everywhere; merge to consolidate duplicates; archive to hide from autocomplete. New tags auto-add when a user types one on any photo.' },
     { key: 'mappins',   label: '\u{1F4CD} Map Pins',          desc: 'Pin color + icon for each map marker type — Lead, Service job, Reno, Work order, Job, Project. Applies to the Jobs, Leads, and Projects maps for everyone in your org.' },
-    // Read-only Buildertrend -> P86 match preview (js/bt-sync-preview.js).
-    // Served only to the organisation the server's Clickr key belongs to; any
-    // other org's admin gets a sentence saying so, from the server.
-    { key: 'btpreview', label: '\u{1F50E} Buildertrend preview', desc: 'Buildertrend is the source of truth: shows the corrections Project 86 jobs and leads would receive (via Clickr), what it would create, and what P86 has that Buildertrend does not. Nothing changes until you press Apply, which links the record by Buildertrend id and applies its non-money corrections. Blanks never overwrite; money and job numbers are never applied; nothing is created or deleted; nothing is written to Buildertrend.' }
     // Assembly Codes moved to the top-level Assembly Studio → Codes
     // (js/assembly-studio.js). renderOrgAssemblyTaxonomy is exposed on
     // window and mounts into the Studio's #admin-org-asmcodes-host.
@@ -5537,14 +5533,6 @@ function p86Ask(message, opts) {
       // branding.map_pins + paints the per-type color/icon editor.
       bodyHTML = '<div id="admin-org-mappins-host"><div style="color:var(--text-dim,#888);font-style:italic;font-size:12px;padding:20px 0;">Loading map pins…</div></div>';
       setTimeout(renderOrgMapPins, 0);
-    }
-    else if (_orgActiveTab === 'btpreview') {
-      bodyHTML = '<div id="admin-org-btpreview-host"><div style="color:var(--text-dim,#888);font-style:italic;font-size:12px;padding:20px 0;">Loading…</div></div>';
-      setTimeout(function () {
-        var h = document.getElementById('admin-org-btpreview-host');
-        if (h && window.p86BtSyncPreview) window.p86BtSyncPreview.mount(h);
-        else if (h) h.innerHTML = '<div style="color:var(--red,#f87171);padding:14px 0;">The Buildertrend preview script did not load. Reload the page.</div>';
-      }, 0);
     }
     else if (_orgActiveTab === 'asmcodes') {
       // Assembly code registry (Trade + System vocabulary) — fetch + paint async.

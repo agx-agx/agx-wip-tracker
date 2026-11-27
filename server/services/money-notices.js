@@ -24,12 +24,12 @@
  *
  * ━━ THE RULE THAT MATTERS MOST: CALL THESE FROM THE ROUTE HANDLER ONLY ━━
  *
- * The Buildertrend sync writes these same tables — it moves a PO to
- * work_complete, it can mint one born there, it marks bills paid, and it
- * refreshes Buildertrend's own proposal word (which includes Approved and
- * Declined) into data.btStatus on EVERY apply and every link. It does all of
- * that through its own SQL on its own transactional client
- * (services/clickr/sync-apply.js), never through Express.
+ * The Buildertrend sync (removed 11/26/2026) wrote these same tables — it
+ * moved a PO to work_complete, it could mint one born there, it marked bills
+ * paid, and it refreshed Buildertrend's own proposal word (which includes
+ * Approved and Declined) into data.btStatus on EVERY apply and every link. It
+ * did all of that through its own SQL on its own transactional client, never
+ * through Express. Any writer like it must be treated the same way.
  *
  * So a notice keyed on the ROUTE is unreachable from the sync, and a notice
  * keyed on anything else is a disaster: hang one off a status column, off

@@ -96,7 +96,7 @@
  * Unlike the money notices, no route boundary is needed: a cron cannot be
  * triggered by a write at all. But the Buildertrend sync DOES rewrite
  * job_vendor_bills.due_date in bulk on an unattended 30-minute tick
- * (services/clickr/sync-apply.js), so a sync can make hundreds of bills qualify
+ * (the Buildertrend sync (removed 11/26/2026)), so a sync could make hundreds of bills qualify
  * at once. The digest is what makes that survivable: hundreds of newly-qualified
  * bills are still one email per person, with the section capped.
  */

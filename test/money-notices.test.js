@@ -13,9 +13,10 @@
  *      a status column, off data.btStatus, off updated_at, off a trigger, or
  *      off a helper the sync shares would mail hundreds in one run. There is no
  *      actor to test instead — an unattended run has none. The route boundary
- *      is the whole guard, so the structural tests below assert that no
- *      notifier is reachable from services/clickr/ and that the one helper the
- *      sync genuinely shares (grantSubAccessForPO) has no notice on it.
+ *      is the whole guard, so the structural tests below assert that the
+ *      notifiers are called from route handlers only and that the one shared
+ *      helper (grantSubAccessForPO) has no notice on it. (The Buildertrend
+ *      sync itself was removed on 11/26/2026; the rule stands for any writer.)
  *
  *   2. NOBODY GETS A NOTICE ABOUT THEIR OWN CLICK, and nobody outside the
  *      organisation gets one at all.
@@ -529,19 +530,6 @@ describe('the Buildertrend sync cannot reach a money notice', () => {
   // needle a comment satisfies proves nothing about what runs.
   const codeOf = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
   const REQUIRES_NOTICES = /require\((['"])[.\/]*[a-z\/-]*money-notices\1\)/;
-
-  test('nothing under services/clickr/ requires money-notices', () => {
-    // The sync re-statuses these rows every 30 minutes and can mint a purchase
-    // order already at work_complete. One require here is hundreds of emails.
-    const dir = path.join(__dirname, '..', 'server', 'services', 'clickr');
-    const offenders = [];
-    for (const f of fs.readdirSync(dir)) {
-      if (!f.endsWith('.js')) continue;
-      const src = codeOf(fs.readFileSync(path.join(dir, f), 'utf8'));
-      if (REQUIRES_NOTICES.test(src)) offenders.push('server/services/clickr/' + f);
-    }
-    expect(offenders).toEqual([]);
-  });
 
   test('the notifiers are called from route handlers only', () => {
     const dir = path.join(__dirname, '..', 'server');

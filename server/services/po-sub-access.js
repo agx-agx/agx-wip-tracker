@@ -2,9 +2,9 @@
 // PO-driven sub portal access — ONE grant, two doors.
 //
 // Moved here from routes/purchase-order-routes.js so the Buildertrend sync
-// (services/clickr/sync-apply.js) grants a sub exactly what the PO page grants.
-// The PO page calls it after its status and update writes; the sync calls it
-// after a purchase-order transaction COMMITS, with the PO row re-read from the
+// (removed 11/26/2026) granted a sub exactly what the PO page grants. The PO
+// page calls it after its status and update writes; the sync called it after a
+// purchase-order transaction COMMITTED, with the PO row re-read from the
 // database. It writes through the pool, never inside a caller's transaction,
 // so it can only ever act on a PO write that persisted.
 //

@@ -326,8 +326,8 @@ describe('the card is covered field by field, not by name', () => {
  * Warranty too. The save wrote the status straight through with no stash, so
  * Restore on the Archived tab fell back to 'In Progress' and a Warranty (or
  * Backlog / New / On Hold / Completed) job came back as something else. Same
- * slot js/jobs.js archiveCurrentJob and services/clickr/reconcile-merge.js
- * use — see test/job-archive-restores-status.test.js for the other doors. */
+ * slot js/jobs.js archiveCurrentJob uses — see
+ * test/job-archive-restores-status.test.js for the other doors. */
 describe('archiving from the Job Information card', () => {
   const FROM = ['New', 'Backlog', 'In Progress', 'On Hold', 'Warranty', 'Completed'];
 

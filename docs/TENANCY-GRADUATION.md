@@ -192,7 +192,10 @@ the caller's org. This is covered by a named test
 
 ## 9. The `OR organization_id IS NULL` tolerance is retired — **OPEN** `[machine]` — **HIGHEST RISK ITEM ON THIS LIST**
 
-**597** occurrences of `organization_id IS NULL` across `server/`.
+**581** occurrences of `organization_id IS NULL` across `server/`.
+
+597 → 581: the Buildertrend sync was removed (11/26/2026).
+Its sixteen arms went with the sync's own files; no arm elsewhere changed.
 
 595 → 597: the “see what they see” preview. Two arms, both in the one function
 that moved out of `routes/sub-portal-routes.js` into `services/sub-portal-view.js`
@@ -332,7 +335,7 @@ thread's parent; the eleventh is the one WRITE, and it exists because
 
 When this item closes, all eleven retire with the reads they copied.
 
-581 → 582: `healBtDatesLoose` in `services/clickr/sync-apply.js`, which fills in
+581 → 582: `healBtDatesLoose` in `sync-apply.js` (Buildertrend sync, removed 11/26/2026), which fills in
 the date Buildertrend made a record on the four kinds that hang off a job —
 change orders, purchase orders, bills, estimates. One arm, and it COPIES the
 predicate those four already use: a change order, purchase order or bill row can
@@ -346,7 +349,7 @@ locked read a few lines above every call site has already resolved through the
 record's JOB, whose organization is the caller's — `lockedChangeOrder`,
 `lockedPurchaseOrder`, `lockedBill` and `lockedEstimate` each carry that join.
 The arm only stops the fill being skipped; it never widens what the sync can
-reach. `test/clickr-change-orders.test.js` drives both directions: a change
+reach. its test (removed with the sync) drives both directions: a change
 order whose `organization_id` is NULL is dated, and the other tenant's twin is
 not. The jobs and leads halves of the same fill use the STRICT predicate,
 because those two tables have no legacy NULL-org rows. When this item closes it
@@ -449,7 +452,7 @@ answers identically to an absent one (404), which is the parity
 `test/work-order-kinds.test.js` pins.
 
 The third is the write those two make necessary. `service_tickets.client_id`
-is a reference to a client, so `services/clickr/reconcile-merge.js`’
+is a reference to a client, so `reconcile-merge.js` (Buildertrend sync, removed 11/26/2026)’
 registry — which `test/reconcile-merge.test.js` pins to `server/db.js` —
 requires the client merge to repoint it, and `services/client-merge.js` now
 does, predicate-for-predicate with the `invoices` and `payments` UPDATEs it
@@ -458,7 +461,7 @@ tenancy would otherwise survive the merge still pointing at the client the
 merge just archived. No new table.
 
 
-562 → 566: the Buildertrend UNDO SPINE (`services/clickr/sync-journal.js`). Four statements, and
+562 → 566: the Buildertrend UNDO SPINE (`sync-journal.js` (Buildertrend sync, removed 11/26/2026)). Four statements, and
 each one is a read or a write of a record this organisation owns, reached
 from a journal row rather than from a request: `snapshot()` photographs the
 row before a sync writes it, `undoChange()` re-reads that row under its own
@@ -475,7 +478,7 @@ tolerant of, and both are classified `DIRECT` in
 `services/org-table-classification.js`. That asymmetry is the point — the
 arm exists for the records being CHANGED, not for the record of the change.
 557 → 562: the Buildertrend ESTIMATES sync. Five statements, on the same terms
-as the four syncs before it. `services/clickr/sync-preview.js` readP86’s
+as the four syncs before it. `sync-preview.js` (Buildertrend sync, removed 11/26/2026) readP86’s
 `estimates` read and `sync-apply.js` `lockedEstimate` both reach an estimate
 through `jobs.organization_id = $n` (strict, via the new
 `estimates.attached_job_id`) and carry the arm on the ESTIMATE’s own column,
@@ -517,7 +520,7 @@ ATTACHMENT’s own column, whose older rows can be NULL; dropping it would count
 legacy photo as zero. No new table.
 551 → 554: the Buildertrend BILLS sync, on exactly the terms the change-order
 and purchase-order sync already took (see below). Three statements:
-`services/clickr/sync-preview.js` readP86's `job_vendor_bills` read, and
+`sync-preview.js` (Buildertrend sync, removed 11/26/2026) readP86's `job_vendor_bills` read, and
 `sync-apply.js` `lockedBill` and `nextBillNumber`. The first two reach
 `job_vendor_bills` through `jobs.organization_id = $n` (strict) and carry the
 arm on the BILL's own column, whose older rows can be NULL — skipping one would
@@ -552,7 +555,7 @@ naming our source id must not be able to block this org's merge.
 `eda0be04` +1, `4755ea44` +1, `e034406d` +2, `31d779ea` +6, `1a37e687` +4,
 the service-ticket access rule (S7) +1 — its narrow-tier ownership lookup on
 `jobs`, a table that already carries the arm — and the Buildertrend change-order
-and purchase-order sync +2 each (`services/clickr/sync-preview.js` readP86, and
+and purchase-order sync +2 each (`sync-preview.js` (Buildertrend sync, removed 11/26/2026) readP86, and
 `sync-apply.js` lockedChangeOrder / lockedPurchaseOrder). Each reaches
 `job_change_orders` / `job_purchase_orders` through `jobs.organization_id = $n`
 (strict); the arm is on the record's OWN column, whose older rows can be NULL —

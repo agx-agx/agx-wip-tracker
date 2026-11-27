@@ -233,7 +233,7 @@ router.get('/', requireAuth, async (req, res) => {
       // object — means "this estimate was SOLD onto that job", and it is what
       // the list paints as Won. attached_job_id means "this estimate lives in
       // that job’s file": the shape Buildertrend’s estimate worksheets arrive
-      // in (services/clickr/estimate-match.js), where there is no lead, no
+      // in, where there is no lead, no
       // client, and nothing has been sold to anybody. Every reader that showed
       // a lead or a client had to learn both can be absent, and this is the
       // field it learns the job from.
@@ -476,7 +476,7 @@ router.put('/bulk/save', requireAuth, requireCapability('ESTIMATES_EDIT'), requi
         delete blob.market_id;
         // attached_job_id and bt_worksheet_id are COLUMNS too, and neither is
         // ever set from this endpoint: the Buildertrend sync owns both
-        // (services/clickr/sync-apply.js). They are stripped for the same two
+        // (removed 11/26/2026). They are stripped for the same two
         // reasons as the fields above — a copy inside the JSONB shadows the
         // column on the next GET, because that read spreads `data` first, and
         // it makes every save’s blob differ from the last round-trip’s, which

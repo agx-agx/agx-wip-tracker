@@ -55,7 +55,7 @@
  *
  * `attachments` has a dozen INSERT sites and `receipts` is re-pointed in bulk by
  * two of them (routes/job-routes.js on lead→job conversion,
- * services/client-merge.js on a merge) plus the clickr polymorphic reconcile.
+ * services/client-merge.js on a merge).
  * Hanging either notice off the TABLE would mail the lot.
  *
  * And one trap that is specific to these two: the login-less crew-link photo

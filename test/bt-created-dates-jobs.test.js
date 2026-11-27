@@ -292,60 +292,7 @@ describe('a new column has to reach the people who already use the list', () => 
 });
 
 describe('the four record types that hang off a job', () => {
-  /* THE SAME DATE, FOUR MORE TIMES, dropped at a different layer in each.
-   *
-   * Change orders and purchase orders lost it at the READER (allowlisted for
-   * the dataset, never named in readChangeOrder/readPurchaseOrder). Estimates
-   * lost it one layer later, in btSide — the enumerated worksheet view, the
-   * same shape that dropped the job's date. Bills were already carrying it all
-   * the way to the wire and only wanted a column to land in.
-   */
-  const fieldMap = require('../server/services/clickr/field-map');
-
-  test('layer 1: each reader names the key ITS dataset sends', () => {
-    // Buildertrend does not use one name, and a reader that names the wrong
-    // one reads undefined and says nothing about it.
-    expect(fieldMap.readChangeOrder({ changeOrderId: '1', dateAdded: '2026-03-01T10:00:00' }).dateAdded)
-      .toBe('2026-03-01T10:00:00');
-    expect(fieldMap.readPurchaseOrder({ purchaseOrderId: '1', dateAdded: '2026-03-01T10:00:00' }).dateAdded)
-      .toBe('2026-03-01T10:00:00');
-    expect(fieldMap.readBill({ billId: '1', createdDate: '2026-03-01T10:00:00' }).createdDate)
-      .toBe('2026-03-01T10:00:00');
-    expect(fieldMap.readEstimateLine({ worksheetId: '1', dateAdded: '2026-03-01T10:00:00' }).dateAdded)
-      .toBe('2026-03-01T10:00:00');
-  });
-
-  test('the key is chosen in ONE place, not guessed per call site', () => {
-    // Six kinds, two names. Naming a key at each of the six call sites is how
-    // one of them ends up reading undefined for ever without a word.
-    //
-    // That one place is now bt-match.js, because the PREVIEW has to read the
-    // same key to say which records are still owed a date (match.btCreatedDue,
-    // counted by the safe button). Two readers, one rule: a count that could
-    // drift from the write would put a number on a button that does not come
-    // down when it is pressed. sync-apply holds the alias and nothing else.
-    const src = read('server/services/clickr/sync-apply.js').replace(/\r\n/g, '\n');
-    const match = read('server/services/clickr/bt-match.js').replace(/\r\n/g, '\n');
-    expect(liveLine(match, 'function btCreatedRaw(bt) {')).toBe(true);
-    expect(liveLine(src, 'const btCreatedRaw = match.btCreatedRaw;')).toBe(true);
-    expect(liveLine(src, 'function btCreatedRaw(bt) {')).toBe(false);
-    const calls = src.match(/healBtDates(Loose)?\(db, '[a-z_]+', orgId, [a-z.]+, row\.bt\)/g) || [];
-    expect(calls.length).toBe(6);
-    // and nothing hands it a single named key instead of the whole bt side
-    expect(src).not.toContain('row.bt.createdDate)');
-    expect(src).not.toContain('row.bt.dateAdded)');
-  });
-
-  test('it is only ever pointed at tables this file names itself', () => {
-    // The table name is interpolated into the SQL, so it must never come from
-    // a record.
-    const src = read('server/services/clickr/sync-apply.js');
-    const tables = (src.match(/healBtDates(?:Loose)?\(db, '([a-z_]+)'/g) || [])
-      .map((c) => c.split("'")[1]);
-    expect(new Set(tables)).toEqual(new Set(['jobs', 'leads', 'job_change_orders',
-      'job_purchase_orders', 'job_vendor_bills', 'estimates']));
-  });
-
+  // The same two dates on change orders, purchase orders, bills and estimates.
   test('the columns exist on all six tables', () => {
     const db = read('server/db.js');
     for (const t of ['jobs', 'leads', 'job_change_orders', 'job_purchase_orders',

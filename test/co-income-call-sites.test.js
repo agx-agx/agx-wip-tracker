@@ -234,7 +234,7 @@ describe('unitSell now reaches estimates, and every estimate money path knows it
     const MUST = [
       // the browser list/convert/proposal-email total
       [['js', 'estimates.js'], /P\.resolveTargetMargin\(per, est\)/],
-      // the server total (deal memory, the clickr import proof)
+      // the server total (deal memory)
       [['server', 'services', 'money', 'estimate-totals.js'], /P\.resolveTargetMargin\(per, est\)/],
       // the editor's chip + per-group breakdown
       [['js', 'estimate-editor.js'], /_P\.resolveTargetMargin\(per, est\)/],

@@ -98,8 +98,8 @@
 // wild. Buildertrend lets an estimator type what the OWNER PAYS with the
 // builder cost left at zero (markup type "2"), and 0 x k is 0 for every
 // k, so no percent can express it — see
-// server/services/clickr/estimate-match.js, which imports exactly those
-// lines carrying a promised price instead of refusing the worksheet.
+// the Buildertrend estimate import (removed 11/26/2026), which brought those
+// lines in carrying a promised price instead of refusing the worksheet.
 //
 // THE DISCRIMINATOR IS THE ABSENCE OF THE KEY — the same mechanism the
 // per-line `markup` field has used since this module was written, and

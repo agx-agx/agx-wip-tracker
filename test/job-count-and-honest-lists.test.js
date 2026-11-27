@@ -328,14 +328,13 @@ describe('MUTANTS', () => {
  * ══════════════════════════════════════════════════════════════════════════*/
 describe('services/job-status-filter', () => {
   const f = require('../server/services/job-status-filter');
-  const match = require('../server/services/clickr/bt-match');
 
   test('it reuses the PINNED vocabulary rather than keeping a second copy', () => {
     // Every status test/job-status-vocabulary.test.js pins must be matched by
     // its own state word. A second mapping in job-status-filter.js is exactly
     // how the two would drift, so this asserts the tie, not the table.
     for (const st of ACTIVE.concat(OTHER)) {
-      const state = match.p86JobState(st);
+      const state = f.p86JobState(st);
       expect(state).not.toBeNull();
       expect(f.matchesJobStatus(st, state)).toBe(true);
       expect(f.JOB_STATES).toContain(state);

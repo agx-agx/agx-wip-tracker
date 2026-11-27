@@ -1524,7 +1524,7 @@ async function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_subs_market      ON subs(market_id);
 
     -- Buildertrend record ids (Admin -> Organization -> Buildertrend preview).
-    -- Stamped ONLY by server/services/clickr/sync-apply.js when an admin applies
+    -- Stamped ONLY by the Buildertrend sync (removed 11/26/2026) when an admin applied
     -- a confident match, so later syncs find the counterpart by id instead of
     -- re-matching on number, name and address. NULL = never linked. Unique per
     -- organization: one Buildertrend record links to at most one P86 record.
@@ -1538,7 +1538,7 @@ async function initSchema() {
     --
     -- Buildertrend supplies the real one (jobs.createdDate: non-empty on all
     -- 729 records, 729 distinct values), and it was being read by
-    -- services/clickr/field-map.js and then dropped on the floor.
+    -- the sync's reader and then dropped on the floor.
     --
     -- created_at is NOT repurposed. It still means "this row appeared in our
     -- database", which is what an audit needs; bt_created_at is the record's
@@ -1560,7 +1560,7 @@ async function initSchema() {
     -- A purchase order's Buildertrend id, on the same terms.
     ALTER TABLE job_purchase_orders ADD COLUMN IF NOT EXISTS bt_po_id TEXT;
     CREATE UNIQUE INDEX IF NOT EXISTS uq_job_purchase_orders_bt_po_id ON job_purchase_orders(bt_po_id) WHERE bt_po_id IS NOT NULL;
-    -- A vendor bill's Buildertrend id (services/clickr/bill-match.js rung 0), on
+    -- A vendor bill's Buildertrend id (the sync's bill matcher, rung 0), on
     -- the same terms again: a bill row can carry a NULL organization_id, so this
     -- one is unique outright and every sync read reaches the row through its job.
     ALTER TABLE job_vendor_bills ADD COLUMN IF NOT EXISTS bt_bill_id TEXT;
@@ -1580,7 +1580,7 @@ async function initSchema() {
 
     -- ── AN ESTIMATE FILED UNDER A JOB ───────────────────────────────────
     -- Buildertrend keeps its estimate WORKSHEETS on the JOB, and
-    -- services/clickr/estimate-match.js brings each one over as a real P86
+    -- the Buildertrend sync brought each one over as a real P86
     -- estimate. Until now a P86 estimate belonged to a lead and a client and
     -- had no job link of any kind, so this column is the new shape.
     --
@@ -1601,7 +1601,7 @@ async function initSchema() {
     -- other direction: deleting a job never deletes an estimate.
     ALTER TABLE estimates ADD COLUMN IF NOT EXISTS attached_job_id TEXT REFERENCES jobs(id) ON DELETE SET NULL;
     CREATE INDEX IF NOT EXISTS idx_estimates_attached_job ON estimates(attached_job_id) WHERE attached_job_id IS NOT NULL;
-    -- A Buildertrend estimate WORKSHEET's id (services/clickr/estimate-match.js
+    -- A Buildertrend estimate WORKSHEET's id (the sync's estimate matcher,
     -- rung 0), on the same terms as the three above: an estimate row can carry
     -- a NULL organization_id (see the upsert in routes/estimate-routes.js), so
     -- this one is unique outright, and every sync read reaches the row through
@@ -1617,7 +1617,7 @@ async function initSchema() {
     --
     -- Buildertrend names the field differently per dataset (dateAdded on
     -- change orders, purchase orders and estimate lines; createdDate on bills),
-    -- which is why services/clickr/sync-apply.js reads it through one accessor
+    -- which is why the sync read it through one accessor
     -- rather than naming a key at each call site: a wrong guess is silent.
     ALTER TABLE job_change_orders   ADD COLUMN IF NOT EXISTS bt_created_at TIMESTAMPTZ;
     ALTER TABLE job_change_orders   ADD COLUMN IF NOT EXISTS bt_synced_at  TIMESTAMPTZ;
@@ -1627,7 +1627,7 @@ async function initSchema() {
     ALTER TABLE job_vendor_bills    ADD COLUMN IF NOT EXISTS bt_synced_at  TIMESTAMPTZ;
     ALTER TABLE estimates           ADD COLUMN IF NOT EXISTS bt_created_at TIMESTAMPTZ;
     ALTER TABLE estimates           ADD COLUMN IF NOT EXISTS bt_synced_at  TIMESTAMPTZ;
-    -- Buildertrend reconcile archive (services/clickr/reconcile-merge.js): a merged
+    -- Buildertrend reconcile archive (from the removed sync): a merged
     -- duplicate or a P86-only record set aside for review. NULL = live. Archived
     -- leads and clients are left out of their list routes and the map; an archived
     -- job also carries status "Archived", which the job list already hides.
@@ -1644,7 +1644,7 @@ async function initSchema() {
     ALTER TABLE clients ADD COLUMN IF NOT EXISTS bt_merged_into TEXT;
     ALTER TABLE clients ADD COLUMN IF NOT EXISTS bt_archived_by INTEGER;
     -- "New / changed in Buildertrend since your last refresh" on the Buildertrend
-    -- preview (services/clickr/since-refresh.js). bt_record_snapshots remembers
+    -- preview (removed 11/26/2026). bt_record_snapshots remembers
     -- the Buildertrend values of every record of a COMPLETE read, per
     -- organization and dataset — Buildertrend values only, never P86's, so an
     -- Apply can never read as a Buildertrend change. bt_preview_views holds each
@@ -1676,7 +1676,7 @@ async function initSchema() {
     -- before_value NULL with kind 'create' means the row did not exist. An
     -- undo of a create therefore DELETES, which is the one undo that can fail
     -- on a record something else has since pointed at -- see
-    -- services/clickr/sync-journal.js, which refuses rather than cascading.
+    -- the sync's undo journal, which refused rather than cascading.
     --
     -- Written inside the SAME transaction as the write it describes: a change
     -- that committed without its journal row would be a change with no way
@@ -4674,7 +4674,7 @@ async function initSchema() {
       WHERE scope = 'personal' AND archived_at IS NULL;
 
     -- ── THE BUILDERTREND TO-DO A TASK CAME FROM ────────────────────────
-    -- Stamped ONLY by server/services/clickr/sync-apply.js when an admin
+    -- Stamped ONLY by the Buildertrend sync (removed 11/26/2026) when an admin
     -- applies a confident match on the Tasks tab of the Buildertrend preview.
     -- NULL = never linked.
     --
@@ -4692,7 +4692,7 @@ async function initSchema() {
 
     -- BUILDERTREND'S OWN STATUS WORD, AND IT IS NOT COMPLETION.
     --
-    -- Clickr's tasks dataset sends TWO fields that both read like completion and
+    -- Buildertrend's tasks dataset sends TWO fields that both read like completion and
     -- disagree: isCompleted (88 of 578 done) and status ("Completed" on 544).
     -- completedAt is carried by exactly the 88 isCompleted calls done, so
     -- isCompleted is the per-task flag and status is measuring the Buildertrend
@@ -4707,7 +4707,7 @@ async function initSchema() {
     ALTER TABLE tasks ADD COLUMN IF NOT EXISTS bt_task_status TEXT;
 
     -- WHEN THE SYNC LAST WROTE THIS TASK, stamped in the SAME statement as
-    -- updated_at by every write services/clickr/sync-apply.js makes, and by
+    -- updated_at by every write the Buildertrend sync made, and by
     -- nothing else.
     --
     -- It is how "a person edited this" is ANSWERED rather than assumed. Every

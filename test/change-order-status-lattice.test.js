@@ -15,9 +15,6 @@
 //
 // The two client copies are EVALUATED, not regex-matched, so a syntactically
 // valid change to either is the thing compared.
-//
-// This file follows test/clickr-purchase-orders.test.js, which pins
-// SUB_ACCESS_STATUS equal to PO_ACTIVE_STATUS the same way.
 
 let db;
 

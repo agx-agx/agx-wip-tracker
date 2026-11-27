@@ -38,10 +38,7 @@
  * whole rule, and it is the rule the inbox already uses to decide which
  * threads are yours (GET /api/messages/recent).
  *
- * THE SYNC CANNOT REACH THIS. Unlike the money notices next door, no caution
- * is needed: services/clickr/* never writes `messages` and has no thread_key
- * anywhere in it, so Buildertrend has no door into a comment thread. The two
- * writers are the human POST and 86's tool, and both are called from their own
+ * Buildertrend has no door into a comment thread. The two writers are the human POST and 86's tool, and both are called from their own
  * handler, after the row is committed.
  *
  * BEST-EFFORT. Nothing here throws; callers hand the promise to
